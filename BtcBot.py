@@ -15,8 +15,8 @@ class BtcBot(Bot):
         current_time = time.time()
         day = time.strftime("%Y %b %d ", time.localtime(current_time))
         
-        start_timestamp = day+"17:20:00" 
-        end_timestamp = day+"17:40:00"
+        start_timestamp = day+"17:00:00" 
+        end_timestamp = day+"17:15:00"
         
         stobj = time.strptime(start_timestamp, "%Y %b %d %H:%M:%S")
         etobj = time.strptime(end_timestamp, "%Y %b %d %H:%M:%S")
