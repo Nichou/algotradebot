@@ -139,17 +139,13 @@ class BtcBot(Bot):
     
     def process(self):
         
-        if (self.status.runtime_error):
-            print(self.status.exception)
+        if (self.status.runtime_error):            
             return
         
         self.checkStrategy();
         
         if (self.status.ok):
             self.order()
-        
-        if (self.status.updated()): 
-            self.log.postMessage(self.status.message)
     
     
        

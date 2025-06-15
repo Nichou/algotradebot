@@ -11,7 +11,8 @@ async def loop(context: ContextTypes.DEFAULT_TYPE) -> None:
     btcbot.process()
     btcbot.log.update()
     
-    await context.bot.send_message(job.chat_id, text=btcbot.status.message)
+    if (btcbot.status.updated()):
+        await context.bot.send_message(job.chat_id, text=btcbot.status.message)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     
