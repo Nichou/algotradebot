@@ -15,8 +15,8 @@ class BtcBot(Bot):
         current_time = time.time()
         day = time.strftime("%Y %b %d ", time.localtime(current_time))
         
-        start_timestamp = day+"17:00:00" 
-        end_timestamp = day+"17:15:00"
+        start_timestamp = day+"17:20:00" 
+        end_timestamp = day+"17:40:00"
         
         stobj = time.strptime(start_timestamp, "%Y %b %d %H:%M:%S")
         etobj = time.strptime(end_timestamp, "%Y %b %d %H:%M:%S")
@@ -68,7 +68,7 @@ class BtcBot(Bot):
             self.status.postMessage("RUNTIME ERROR (code: 2): "+str(ke))
             return
             
-        former_price = csv_handler.df['close'].iloc[[-2]]
+        former_price = float(csv_handler.df['close'].iloc[-2])
         
         if (btc_price/former_price-1.0 < mean or self.status.meta['holding']):
             self.status.ok = True
