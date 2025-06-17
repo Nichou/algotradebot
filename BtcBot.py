@@ -25,16 +25,18 @@ class BtcBot(Bot):
         elapse = time.mktime(etobj)
         
         if (current_time >= slapse and current_time < elapse):
-            self.status.istime = True 
+            self.status.istime = True
+        else:
+            self.status.istime = False
 
         print(" "+start_timestamp+" "+end_timestamp+" "+str(slapse)+" "+str(elapse)+" ")
             
     def checkStrategy(self):
         
+        self.log.postMessage("Strategy checked")
         self.checkTime()
         
         if (not(self.status.istime)):
-            self.log.postMessage("Time checked")
             return       
         
         try:

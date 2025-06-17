@@ -78,6 +78,8 @@ class Log:
         with open("log.txt","a") as log_file:
             log_file.write(body)
             
+        self.message_queue = []    
+            
     def reset(self):
         if os.path.exists("log.txt"):
             os.remove("log.txt")
