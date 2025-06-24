@@ -3,8 +3,8 @@ from utils import *
 import json
 
 class BtcClient(BinanceClient):
-    def __init__(self, api_key, api_secret):
-        super().__init__(api_key, api_secret, "USDT", "BTC")
+    def __init__(self):
+        super().__init__("USDT", "BTC")
         
 class BtcBot(Bot):
     def __init__(self, binance_client):
@@ -46,8 +46,8 @@ class BtcBot(Bot):
             self.status.meta = {"holding": False}
         
         bars = self.binance_client.client.get_historical_klines('BTCUSDT', '1d', limit=1000)
-        symbol = self.binance_client.client.get_symbol_ticker(symbol="BTCUSDT")
-        btc_price = float(symbol['price'])
+        
+        btc_price = self.binance_client.getPairPrice()
 
         csv_handler = CSVHandler()
         
@@ -78,12 +78,17 @@ class BtcBot(Bot):
     def order(self):
         
         fit_factor = 0.00001
+        max_trade_value = 60.0 #lack implementation
         
         try:
-            btc_price = self.binance_client.client.get_symbol_ticker(symbol="BTCUSDT")
-            cash = self.binance_client.client.get_asset_balance(asset='USDT')
-            buy_quantity = round(float(cash['free'])/float(btc_price['price']), 5)-fit_factor
-            sell_quantity = round(float(self.binance_client.client.get_asset_balance(asset='BTC')['free']), 5)-fit_factor
+            pair_price = self.binance_client.getPairPrice()
+        
+            buy_quantity = self.binance_client.parseTargetValue(max_trade_value)
+        
+            if (self.binance_client.getBalanceTargetAmount() < max_trade_value):
+                buy_quantity = self.binance_client.getBalanceTargetAmount()-fit_factor
+                
+            sell_quantity = self.binance_client.getTargetBalance()-fit_factor
             
             buy_quantity = refit5digits(buy_quantity)
             sell_quantity = refit5digits(sell_quantity)
@@ -94,6 +99,7 @@ class BtcBot(Bot):
         except Exception as e:
             self.status.postMessage("RUNTIME ERROR (code: 4): "+str(e))
             return
+            
             
         try:
             
@@ -112,11 +118,11 @@ class BtcBot(Bot):
         
         if (not(self.status.meta['holding'])):
             try:
-                order_result = self.binance_client.client.create_order(symbol='BTCUSDT', side=SIDE_BUY, type=ORDER_TYPE_MARKET, quantity=buy_quantity) #success
+                order_result = self.binance_client.client.create_order(symbol='BTCUSDT', side=SIDE_BUY, type=ORDER_TYPE_MARKET, quantity=buy_quantity)
                 
                 self.status.meta['holding'] = True
-                
-                self.status.postMessage("Succesfully buyed "+str(buy_quantity)+" BTC at "+btc_price['price']+" USDT\nclientOrderId: "+order_result['clientOrderId'])
+                              
+                self.status.postMessage("Succesfully buyed "+str(buy_quantity)+" BTC at "+str(pair_price)+" USDT\nclientOrderId: "+order_result['clientOrderId'])
                 
             except BinanceAPIException as e:
                 self.status.postMessage("RUNTIME ERROR (code: 7): "+str(e))
@@ -127,8 +133,8 @@ class BtcBot(Bot):
                 order_result = self.binance_client.client.create_order(symbol='BTCUSDT', side=SIDE_SELL, type=ORDER_TYPE_MARKET, quantity=sell_quantity)
                 
                 self.status.meta['holding'] = False
-                
-                self.status.postMessage("Succesfully selled "+str(sell_quantity)+" BTC at "+btc_price['price']+" USDT\nclientOrderId: "+order_result['clientOrderId'])
+                              
+                self.status.postMessage("Succesfully selled "+str(sell_quantity)+" BTC at "+str(pair_price)+" USDT\nclientOrderId: "+order_result['clientOrderId'])
                 
             except BinanceAPIException as e:
                 self.status.postMessage("RUNTIME ERROR (code: 8): "+str(e))

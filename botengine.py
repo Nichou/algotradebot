@@ -4,35 +4,61 @@ from binance.exceptions import BinanceAPIException, BinanceOrderException
 import time
 import os
 
-class BinanceClient:
-    def __init__(self, api_key, api_secret, asset, target_asset):
-       
+class ClientSingleton:
+    def __init__(self):
+        self.client = None
+    def init(self, api_key, api_secret):
         self.client = Client(api_key, api_secret)
+
+clientSingleton = ClientSingleton()
+
+def initClient(api_key, api_secret):
+    clientSingleton.init(api_key, api_secret)
+
+class BinanceClient:
+    def __init__(self, asset, target_asset):
+       
+        if (clientSingleton.client == None):
+            raise Exception('No client detected')
+        self.client = clientSingleton.client
         self.asset = asset 
         self.target_asset = target_asset
         self.pair = target_asset+asset
     
-    def getPrice(self):
-        price = None
+    def getBalanceTargetAmount(self):
+        
         try:
-            price = round(self.getBalance()/self.getTargetPrice(), 5);
+            amount = round(self.getBalance()/self.getPairPrice(), 5);
         except:
-            raise Exception('Failed to get price');
-        return price
+            raise Exception('Failed to get target amount');
+        return amount
+        
+    def parseTargetValue(self, value):
+        try:
+            amount = round(value/self.getPairPrice(), 5);
+        except:
+            raise Exception('Failed to get target value');
+        return amount
         
     def getBalance(self):
-        balance = None
+        
         try:
             balance = float(self.client.get_asset_balance(asset=self.asset)['free'])
         except:
             raise Exception('Failed to get balance')
         return balance
         
-    def getTargetPrice(self):
-        price = None
-        try:
-            a = 1/0
+    def getTargetBalance(self):
         
+        try:
+            balance = float(self.client.get_asset_balance(asset=self.target_asset)['free'])
+        except:
+            raise Exception('Failed to get balance')
+        return balance        
+        
+    def getPairPrice(self):
+        
+        try:     
             price = float(self.client.get_symbol_ticker(symbol=self.pair)['price'])
         except:
             raise Exception('Failed to get target price')
