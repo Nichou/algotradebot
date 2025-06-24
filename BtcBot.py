@@ -77,8 +77,15 @@ class BtcBot(Bot):
         
     def order(self):
         
+        try:
+            with open('settings.json') as json_file:
+                settings = json.load(json_file)
+        except FileNotFoundError: 
+                self.status.postMessage("RUNTIME ERROR (code: 9): "+str(e))
+        
+        max_trade_value = settings['usdtbtc_max_trade_value']
+        
         fit_factor = 0.00001
-        max_trade_value = 60.0 #lack implementation
         
         try:
             pair_price = self.binance_client.getPairPrice()
