@@ -74,8 +74,9 @@ class StrategyBot(Bot):
         global gbalance
         global ginit        
     
-        gnum_variences = 0.0
-        gtrade_pairs = None
+        if self.pm["post_sell"] == False:
+            gnum_variences = 0.0
+            gtrade_pairs = None
         gbalance = 0.0
         ginit = False
     
@@ -164,7 +165,8 @@ class StrategyBot(Bot):
         try:
             
             if (not(self.status.meta['holding'])):
-                test_order = self.binance_client.client.create_test_order(symbol=self.binance_client.pair, side='BUY', type='MARKET',quantity=buy_quantity)
+                if not(self.pm["lock_buy"]):
+                    test_order = self.binance_client.client.create_test_order(symbol=self.binance_client.pair, side='BUY', type='MARKET',quantity=buy_quantity)
             else:
                 test_order = self.binance_client.client.create_test_order(symbol=self.binance_client.pair, side='SELL', type='MARKET',quantity=sell_quantity)
         
@@ -176,17 +178,19 @@ class StrategyBot(Bot):
             return
             
         
-        if (not(self.status.meta['holding']) and not(self.pm["lock_buy"])):
-            try:
-                order_result = self.binance_client.client.create_order(symbol=self.binance_client.pair, side=SIDE_BUY, type=ORDER_TYPE_MARKET, quantity=buy_quantity)
-                
-                self.status.meta['holding'] = True
-                              
-                self.status.postMessage("Succesfully buyed "+str(buy_quantity)+" "+self.binance_client.target_asset+" at "+str(pair_price)+" USDT\nclientOrderId: "+order_result['clientOrderId'])
-                
-            except BinanceAPIException as e:
-                self.status.postError("RUNTIME ERROR (code: 7): "+str(e))
-                return
+        if not(self.status.meta['holding']):
+            
+            if not(self.pm["lock_buy"]):
+                try:
+                    order_result = self.binance_client.client.create_order(symbol=self.binance_client.pair, side=SIDE_BUY, type=ORDER_TYPE_MARKET, quantity=buy_quantity)
+                    
+                    self.status.meta['holding'] = True
+                                  
+                    self.status.postMessage("Succesfully buyed "+str(buy_quantity)+" "+self.binance_client.target_asset+" at "+str(pair_price)+" USDT\nclientOrderId: "+order_result['clientOrderId'])
+                    
+                except BinanceAPIException as e:
+                    self.status.postError("RUNTIME ERROR (code: 7): "+str(e))
+                    return
             
         else:
             try:

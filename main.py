@@ -16,7 +16,8 @@ async def loop(context: ContextTypes.DEFAULT_TYPE) -> None:
         
         if (bt.status.updated()):
             await context.bot.send_message(job.chat_id, text=bt.status.message)
-            
+    else:
+        bt.resetGlobals()
     
     pm = loadProgramMeta() 
 
