@@ -153,6 +153,8 @@ class StrategyBot(Bot):
             buy_quantity = round(round(buy_quantity, dec)-2.0/pow(10.0,dec),dec)
             sell_quantity = round(round(sell_quantity, dec)-2.0/pow(10.0,dec),dec)
             
+            buy_quantity = format(buy_quantity,'f')
+            sell_quantity = format(sell_quantity,'f')
             
         except BinanceAPIException as e:
             self.status.postError("RUNTIME ERROR (code: 3): "+str(e))
